@@ -10,7 +10,7 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  const { username } = request.header
+  const { username } = request.header;
 
   const isAlreadyRegistered = users.find((user) => username === user.username );
 
@@ -21,7 +21,13 @@ function checksExistsUserAccount(request, response, next) {
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request;
+  console.log(user);
+
+  if(!user.pro && user.todos.length < 10) {
+    return next();
+  }
+
 }
 
 function checksTodoExists(request, response, next) {
