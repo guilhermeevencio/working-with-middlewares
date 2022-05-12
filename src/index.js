@@ -10,7 +10,7 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  const { username } = request.header;
+  const { username } = request.headers;
 
   const isAlreadyRegistered = users.find((user) => username === user.username );
 
@@ -18,20 +18,41 @@ function checksExistsUserAccount(request, response, next) {
     return response.status(404).json({ error: 'user already exists!' });
   };
   request.user = isAlreadyRegistered;
+  return next();
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
   const { user } = request;
-  console.log(user);
 
   if(!user.pro && user.todos.length < 10) {
     return next();
   }
-
+  return response.status(403).send();
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+  const id = request.params.id;
+  const user = users.find((user) => username === user.username );
+
+  const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi;
+
+  if (!regexExp.test(id)) {
+    return response.status(400).json({ error: 'id not valid!' })
+  }
+
+  if (!user) {
+    return response.status(404).json({ error: 'not a valid user' });
+  }
+
+  const toDo = user.todos.find((todo) => todo.id === id);
+
+  if (!toDo) {
+    return response.status(404).send();
+  }
+  request.user = user;
+  request.todo = toDo;
+  return next();
 }
 
 function findUserById(request, response, next) {
