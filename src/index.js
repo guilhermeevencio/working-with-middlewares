@@ -24,10 +24,10 @@ function checksExistsUserAccount(request, response, next) {
 function checksCreateTodosUserAvailability(request, response, next) {
   const { user } = request;
 
-  if(!user.pro && user.todos.length < 10) {
+  if((!user.pro && user.todos.length < 10) || user.pro) {
     return next();
   }
-  return response.status(403).send();
+  return response.status(403).json({ error: 'user not found!' });
 }
 
 function checksTodoExists(request, response, next) {
@@ -48,15 +48,24 @@ function checksTodoExists(request, response, next) {
   const toDo = user.todos.find((todo) => todo.id === id);
 
   if (!toDo) {
-    return response.status(404).send();
+    return response.status(404).json({ error: 'todo not found!' });
   }
+
   request.user = user;
   request.todo = toDo;
   return next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const id = request.params.id;
+  const user = users.find((user) => user.id === id);
+
+  if(!user) {
+    return response.status(404);
+  }
+
+  request.user = user;
+  return next();
 }
 
 app.post('/users', (request, response) => {
